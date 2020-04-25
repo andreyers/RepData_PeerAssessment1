@@ -14,20 +14,19 @@ output:
 
 I first set up the environment and list necessary libraries. Make sure the script is run in the correct working directory (the folder should be RepData_PeerAssessment1).
 
-```{r setup}
 
+```r
 rm(list = ls(all=TRUE))
 
 library(utils)
 library(data.table)
 library(dplyr)
 library(lattice)
-
 ```
 
 Then, unzip the data (as needed) and load it into R:
-```{r}
 
+```r
 zipfile <- "activity.zip"
 activityfile <- "activity.csv"
 
@@ -42,15 +41,42 @@ activity = read.csv(activityfile)
 
 # use data.table for easy reading
 # activity_tbl = data.table(activity)
-
 ```
 
 To inspect the data, I use the following:
-```{r}
+
+```r
 # Examine given dataset
 names(activity)
+```
+
+```
+## [1] "steps"    "date"     "interval"
+```
+
+```r
 str(activity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+```r
 head(activity)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
 ```
 
 Per the course website, the dataset is downloaded in a zip file containing a single csv file with the specifications below. So we are looking at the right dataset.
@@ -66,7 +92,8 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 A histogram can easily illustrate frequency of a measurement, or how often a value is produced. We can also use this graph to draw summary statistics, such as mean, median, or mode. Below, I have a function to generate a histogram scaled to our dataset. This will be called multiple times for the questions below.
 
-```{r}
+
+```r
 hist_mm <- function(data, title, showsumstats=TRUE) {
   
   # Generate the histogram
@@ -97,7 +124,6 @@ hist_mm <- function(data, title, showsumstats=TRUE) {
   )
   }
 }
-
 ```
 
 ***
@@ -106,7 +132,8 @@ hist_mm <- function(data, title, showsumstats=TRUE) {
 
 For this part of the assignment, I ignore missing values and summarize the data by taking the sum of the step entries per day. Using this information, I provide a histogram showing the mean and median total number of steps per day.
 
-```{r}
+
+```r
 # Summarise data by day
 
 sumbyday <- 
@@ -118,11 +145,12 @@ sumbyday <-
 # Call histogram function on total steps
 
 hist_mm(sumbyday$totalsteps, 'Total Number of Steps Taken Per Day')
-
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 The legend above provides mean and median values of steps taken per day.  
-The mean total steps per day is `r mean(sumbyday$totalsteps)`. The median total steps per day is `r median(sumbyday$totalsteps)`.
+The mean total steps per day is 1.0766189\times 10^{4}. The median total steps per day is 10765.
 
 ***
 
@@ -131,7 +159,8 @@ The mean total steps per day is `r mean(sumbyday$totalsteps)`. The median total 
 Time series plots are useful in visualizing measurements over time. In this case, we use time series to visualize steps taken in each discrete interval of time (5 minute intervals). The time axis, in minutes, is on the x-axis, and the number of steps in a given interval is on the y-axis.  
 To address the average daily activity pattern and the 5-minute interval that has the maximum number of steps per day, I first summarize the dataset by interval.
 
-```{r} 
+
+```r
 # Summarise data by interval
 
 sumbyinterval <- 
@@ -172,6 +201,8 @@ legend('topright'
        , bty = 'n')
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
 ***
 
 ## Imputing missing values
@@ -180,8 +211,13 @@ In this section, I address each prompt individually:
 
 >1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r}
+
+```r
 sum(is.na(activity$steps))
+```
+
+```
+## [1] 2304
 ```
 
 >2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
@@ -190,7 +226,8 @@ A simple method to do this would be to use **sumbyinterval** to impute missing v
 
 >3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r}
+
+```r
 # join sumbyinterval with activity table
 activityjoined <-
   activity %>%
@@ -213,24 +250,24 @@ activityimputed_byday <-
   activityimputed %>%
   group_by(date) %>%
   summarise(totalsteps = sum(stepsimputed))
-  
 ```
 
 >4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r}
 
+```r
 hist_mm(activityimputed_byday$totalsteps, 'Total Number of Steps Per Day (Missing Values Removed)')
-
 ```
 
-By filling in NA values with average values, we have reinforced the mean. The mean is identical to the median. The mean total steps per day is `r mean(activityimputed_byday$totalsteps)`. The median total steps per day is `r median(activityimputed_byday$totalsteps)`.
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
+By filling in NA values with average values, we have reinforced the mean. The mean is identical to the median. The mean total steps per day is 1.0766189\times 10^{4}. The median total steps per day is 1.0766189\times 10^{4}.
 
 Summary Statistic | Without NA Values | With NA Values Imputed from Interval Averages
 ------------------| ----------------- | ----------------------
-Mean | `r format(mean(sumbyday$totalsteps), nsmall=2)` | `r format(mean(activityimputed_byday$totalsteps), nsmall=2)` 
-Median | `r format(median(sumbyday$totalsteps), nsmall=2)` | `r format(median(activityimputed_byday$totalsteps), nsmall=2)`
-Standard Deviation | `r format(sd(sumbyday$totalsteps), nsmall=2)` | `r format(sd(activityimputed_byday$totalsteps), nsmall=2)`
+Mean | 10766.19 | 10766.19 
+Median | 10765 | 10766.19
+Standard Deviation | 4269.18 | 3974.391
 
 As per the above table, using this imputation method, the mean total steps per day does not change significantly. However, the median comes closer to the mean when using this imputation method. Of note, the standard deviation decreases due to more values closer to the mean value.
 
@@ -242,7 +279,8 @@ In this section, I address each prompt below. I use the dataset with the filled-
 
 >1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 # Factor labeller
 weekpart <- function(x) {
   if(x %in% c('Saturday','Sunday')){
@@ -262,12 +300,12 @@ impbyinterval <-
   activityimputed %>%
   group_by(interval, daytype) %>%
   summarise(avgsteps = mean(stepsimputed))
-  
 ```
 
 >2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was created using simulated data:
 
-```{r}
+
+```r
 xyplot(avgsteps ~ interval | daytype
        , data = impbyinterval
        , type = 'l'
@@ -276,5 +314,7 @@ xyplot(avgsteps ~ interval | daytype
        , layout = c(1,2)
 )
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 Yes there are some differences between weekend data and weekday data. Weekend activity seems to be more constant throughout the day, while during weekdays, there is a spike of activity between 500-1000 intervals.
